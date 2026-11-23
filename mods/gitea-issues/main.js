@@ -37,7 +37,7 @@ export default class GiteaIssues extends View {
       // Share an in-flight lookup too, so each machine is queried only once.
       if (!Object.hasOwn(this.hosts, hostKey)) this.hosts[hostKey] = gtHosts(exec, loc.on);
       const hosts = await this.hosts[hostKey];
-      if (hosts === null) delete this.hosts[hostKey];
+      if (!hosts?.length) delete this.hosts[hostKey];
       const repo = hosts === null ? null : await resolveRepo(exec, loc, hosts);
       if (JSON.stringify(location()) !== context) return;
       this.repo = repo;
@@ -132,7 +132,7 @@ export default class GiteaIssues extends View {
               .child(div().flex_none().text_color(t.muted).child(`#${issue.number}`))
               .child(div().flex_1().min_w(0).truncate().child(issue.title)))
             .when(labels.length > 0, el => el.child(h_flex().gap(4).flex_wrap().children(labels.map(chip))))
-            .child(div().text_size(11).text_color(t.muted).child(`${issue.author} · ${age(issue.updated_at)}${issue.comments > 0 ? ` · ${issue.comments} comments` : ""}`));
+            .child(div().text_size(11).text_color(t.muted).child(`${issue.author} · ${age(issue.updated_at)}${issue.comments > 0 ? ` · ${issue.comments} comment${issue.comments === 1 ? "" : "s"}` : ""}`));
         })));
   }
 }
