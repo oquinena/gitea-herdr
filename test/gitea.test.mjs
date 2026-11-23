@@ -8,7 +8,7 @@ const loc = { cwd: "/r/sub", on: null };
 test("args", () => {
   assert.deepEqual(LIST_ARGS, ["issue","list","-L","100","--json","number,title,labels,author,updated_at,comments","--no-input"]);
   assert.deepEqual(viewArgs(7), ["issue","view","7","--json","number,title,body,labels,author,state,created_at,url","--no-input"]);
-  assert.deepEqual(commentArgs(7), ["issue","comment","list","7","--json","author,body,created_at","--no-input"]);
+  assert.deepEqual(commentArgs(7), ["issue","comment","list","7","-L","1000","--json","author,body,created_at","--no-input"]);
 });
 
 test("remoteHost", () => {

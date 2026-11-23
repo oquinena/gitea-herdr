@@ -1,7 +1,7 @@
 export const LIST_ARGS = ["issue","list","-L","100","--json","number,title,labels,author,updated_at,comments","--no-input"];
 
 export const viewArgs = number => ["issue","view",String(number),"--json","number,title,body,labels,author,state,created_at,url","--no-input"];
-export const commentArgs = number => ["issue","comment","list",String(number),"--json","author,body,created_at","--no-input"];
+export const commentArgs = number => ["issue","comment","list",String(number),"-L","1000","--json","author,body,created_at","--no-input"];
 
 export function remoteHost(url) {
   if (typeof url !== "string") return null;
