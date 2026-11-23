@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { LIST_ARGS, viewArgs, commentArgs, remoteHost, gtHosts, resolveRepo, runGt, loadIssue, filterIssues, age } from "../mods/gitea-issues/gitea.js";
+import { LIST_ARGS, viewArgs, commentArgs, remoteHost, gtHosts, resolveRepo, runGt, loadIssue, labelCounts, filterIssues, age } from "../mods/gitea-issues/gitea.js";
 
 const fail = (code, stderr) => async () => ({ code, stdout: "", stderr });
 const loc = { cwd: "/r/sub", on: null };
@@ -92,4 +92,59 @@ test("age", () => {
   assert.equal(age("2026-11-19T12:00:00Z", now), "2d");
   assert.equal(age("2026-10-24T12:00:00Z", now), "4w");
   assert.equal(age("2025-11-01T12:00:00Z", now), "1y");
+});
+
+test("labelCounts counts, colors and sorts", () => {
+  const issues = [
+    { labels: [{ name: "bug", color: "ee0701" }, { name: "low", color: "bfe5bf" }] },
+    { labels: [{ name: "bug", color: "ee0701" }] },
+    { labels: ["chore"] },
+    { labels: [] },
+  ];
+  assert.deepEqual(labelCounts(issues), [
+    { name: "bug", color: "#ee0701", count: 2 },
+    { name: "chore", color: null, count: 1 },
+    { name: "low", color: "#bfe5bf", count: 1 },
+  ]);
+});
+
+test("filterIssues by label combines with the query", () => {
+  const issues = [
+    { number: 1, title: "Login", labels: [{ name: "bug", color: "ee0701" }], author: "a" },
+    { number: 2, title: "Login docs", labels: [{ name: "docs", color: "0000ff" }], author: "b" },
+  ];
+  assert.deepEqual(filterIssues(issues, "", "bug").map(i => i.number), [1]);
+  assert.deepEqual(filterIssues(issues, "login", "docs").map(i => i.number), [2]);
+  assert.deepEqual(filterIssues(issues, "login", null).map(i => i.number), [1, 2]);
+  assert.deepEqual(filterIssues(issues, "", "nope"), []);
+});
+
+test("labelCounts counts each issue once and validates colors", () => {
+  assert.deepEqual(labelCounts([
+    { labels: ["bug", "bug"] },
+    { labels: [{ name: "upper", color: "ABC123" }, { name: "short", color: "abc" },
+      { name: "prefix", color: "#123456" }, { name: "number", color: 123456 },
+      { name: "invalid", color: "zzzzzz" }] },
+    {},
+  ]), [
+    { name: "bug", color: null, count: 1 },
+    { name: "invalid", color: null, count: 1 },
+    { name: "number", color: null, count: 1 },
+    { name: "prefix", color: null, count: 1 },
+    { name: "short", color: null, count: 1 },
+    { name: "upper", color: "#ABC123", count: 1 },
+  ]);
+  assert.deepEqual(labelCounts([]), []);
+});
+
+test("filterIssues label matching is exact and empty labels keep text filtering", () => {
+  const issues = [
+    { number: 1, title: "Login", labels: ["bug"], author: "a" },
+    { number: 2, title: "Other", labels: ["bugfix"], author: "b" },
+    { number: 3, title: "Login", author: "c" },
+  ];
+  assert.deepEqual(filterIssues(issues, "LOGIN", "bug").map(i => i.number), [1]);
+  assert.deepEqual(filterIssues(issues, "Other", "bug"), []);
+  assert.deepEqual(filterIssues(issues, "", "BUG"), []);
+  assert.deepEqual(filterIssues(issues, "LOGIN", "").map(i => i.number), [1, 3]);
 });

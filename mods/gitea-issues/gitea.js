@@ -82,9 +82,29 @@ export function labelNames(issue) {
   return (issue.labels ?? []).map(label => typeof label === "string" ? label : label.name);
 }
 
-export function filterIssues(issues, query) {
+export function labelCounts(issues) {
+  const counts = new Map();
+  for (const issue of issues) {
+    const seen = new Set();
+    for (const label of issue.labels ?? []) {
+      const name = typeof label === "string" ? label : label.name;
+      const color = typeof label.color === "string" && /^[0-9a-f]{6}$/i.test(label.color) ? `#${label.color}` : null;
+      if (seen.has(name)) continue;
+      seen.add(name);
+      if (!counts.has(name)) counts.set(name, { name, color, count: 0 });
+      counts.get(name).count++;
+    }
+  }
+  return [...counts.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+}
+
+export function filterIssues(issues, query, label = null) {
   const needle = query.toLowerCase();
-  return issues.filter(issue => `#${issue.number} ${issue.title} ${labelNames(issue).join(" ")} ${issue.author}`.toLowerCase().includes(needle));
+  return issues.filter(issue => {
+    const names = labelNames(issue);
+    return (typeof label !== "string" || !label || names.includes(label))
+      && `#${issue.number} ${issue.title} ${names.join(" ")} ${issue.author}`.toLowerCase().includes(needle);
+  });
 }
 
 export function age(iso, now = Date.now()) {
