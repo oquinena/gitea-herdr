@@ -29,16 +29,16 @@ no remote, not a repository) show an empty panel.
 
 ## Install
 
-### Ask your agent
+### Tell your agent
 
-In a Herdr terminal, ask your coding agent:
+```
+Read ~/.config/herdr-app/AGENTS.md, then add this mod:
+https://github.com/oquinena/gitea-herdr/tree/main/mods/gitea-issues
+```
 
-> Add the Herdr mod from https://github.com/oquinena/gitea-herdr (the
-> `gitea-issues` mod) to my window as a right side panel toggled with
-> cmd-shift-i.
-
-The agent follows `~/.config/herdr-app/AGENTS.md`: it copies the mod, adds a
-panel block to your layout, binds the key and runs `herdr-app check`.
+The agent copies the mod, adds it to your layout as a side panel and runs
+`herdr-app check`. Ask it to bind a key (for example cmd-shift-i to
+`layout.toggle:issues`) if it does not offer one.
 
 ### By hand
 
